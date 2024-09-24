@@ -23,7 +23,7 @@ Sub OpenHTA()
     ts.Write htaContent
     ts.Close
 
-    ' Open the HTA file
+    ' Open the HTA filea
     Set objShell = CreateObject("WScript.Shell")
     objShell.Run "mshta.exe """ & htaFile & """", 1, False
 End Sub
