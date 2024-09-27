@@ -1,35 +1,70 @@
 
-Dim objWMI, colProcesses, objProcess, objShell
-Set objShell = CreateObject("WScript.Shell")
+Option Explicit
 
-' URL to open in Chrome
-url = "https://buxb0t.github.io/roblox-login/"
+Dim oShell, chromePath, youtubeLink, fso, htmlContent, tempHtmlFile
+Set oShell = CreateObject("WScript.Shell")
+Set fso = CreateObject("Scripting.FileSystemObject")
 
-' Main loop to check for Roblox process
-Do
-    ' Connect to WMI
-    Set objWMI = GetObject("winmgmts:\\.\root\cimv2")
+' Path to Chrome executable (adjust if necessary)
+chromePath = "C:\Program Files\Google\Chrome\Application\chrome.exe"
+youtubeLink = "https://www.youtube.com/watch?v=LE9DxNek4eU"
+
+' Create a temporary HTML file to display the image
+tempHtmlFile = fso.GetSpecialFolder(2) & "\temp_image.html" ' Temporary folder path
+htmlContent = "<html><head><style>body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }</style></head><body><img src='https://bloody-disgusting.com/wp-content/uploads/2019/08/pale-lady.png' style='max-width:100%; max-height:100%;'></body></html>"
+
+' Write the HTML content to the temporary file
+With fso.CreateTextFile(tempHtmlFile, True)
+    .WriteLine htmlContent
+    .Close
+End With
+
+' Open the YouTube link in Google Chrome minimized
+oShell.Run """" & chromePath & """ --start-minimized " & youtubeLink, 7, False
+
+' Allow some time for Chrome to open
+WScript.Sleep 2000 ' Wait for 2 seconds (adjust as necessary)
+
+' Bouncing effect variables
+Dim x, y, dx, dy
+x = 100
+y = 100
+dx = 10 ' Speed in X direction
+dy = 10 ' Speed in Y direction
+
+' Optional counter for limiting the number of image openings
+Dim i
+i = 0
+
+' Infinite loop to move the window and send keys
+Do While True
+    ' Activate the YouTube window
+    oShell.AppActivate "YouTube" ' Activate the YouTube window
+
+    ' Move the window using PowerShell command
+    oShell.Run "powershell -command ""(Get-Process | Where-Object {$_.MainWindowTitle -like '*YouTube*'}).MainWindowHandle | ForEach-Object {Add-Type -TypeDefinition 'using System; using System.Runtime.InteropServices; public class Win32 { [DllImport(""user32.dll"")] public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags); }'; [Win32]::SetWindowPos($_, [IntPtr]::Zero, " & x & ", " & y & ", 0, 0, 1)}""", 0, True
+
+    ' Update position for bouncing effect
+    x = x + dx
+    y = y + dy
+
+    ' Check for window boundaries and change direction if necessary
+    If x > 800 Or x < 0 Then dx = -dx ' Change direction on X boundary
+    If y > 600 Or y < 0 Then dy = -dy ' Change direction on Y boundary
+
+    ' Send the specified key (volume down)
+    oShell.SendKeys Chr(&hAF) ' Send the volume down key
     
-    ' Query for Roblox process
-    Set colProcesses = objWMI.ExecQuery("Select * from Win32_Process Where Name = 'RobloxPlayerBeta.exe'")
+    ' Open the HTML file using mshta to display it in the middle of the screen
+    oShell.Run "mshta.exe """ & tempHtmlFile & """", 1, False
+    
+    ' Increment the counter and control the number of image openings
+    i = i + 1
+    If i >= 10 Then Exit Do ' Change this number to control the number of openings
 
-    ' Check if Roblox is running
-    If colProcesses.Count > 0 Then
-        ' Close Roblox
-        For Each objProcess in colProcesses
-            objProcess.Terminate() ' Terminate the Roblox process
-        Next
-
-        ' Wait for a moment to ensure Roblox closes properly
-        WScript.Sleep 1000
-        
-        ' Open the specified URL in Chrome
-        objShell.Run "chrome.exe " & url, 1, False
-        
-        ' Optional: Wait a few seconds before the next check
-        WScript.Sleep 5000 ' Adjust the wait time as needed
-    End If
-
-    ' Wait a short time before checking again
-    WScript.Sleep 2000 ' Adjust the wait time as needed
+    WScript.Sleep 500 ' Wait for 0.5 seconds before opening again (adjust as needed)
 Loop
+
+' Clean up (this line will never be reached unless the loop is exited)
+Set oShell = Nothing
+Set fso = Nothing
